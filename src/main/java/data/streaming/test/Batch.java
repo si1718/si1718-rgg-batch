@@ -32,12 +32,19 @@ import dbase.Utils;
 
 
 public class Batch {
-	
-	private final static MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
-    private static MongoClient client;
+	/*private final static MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
+    private static MongoClient client;*/
     private static MongoDatabase database;
-    private static DB db;
+    /*private static DB db;*/
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    
+    
+    static void connectionDB() {
+    		MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
+		MongoClient client = new MongoClient(uri);
+		database = client.getDatabase("si1718-rgg-groups");
+		DB db = client.getDB("si1718-rgg-groups");
+    } 
     
     
     public static List <Document> collectionGroupsToList (MongoDatabase database) {
@@ -54,13 +61,15 @@ public class Batch {
     		return res;
     }
     
+    
 	public static void ratingGroups () /*throws MalformedURLException*/ {
 		// TODO Auto-generated method stub
-		client = new MongoClient(uri);
+		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");*/
 		
-		Set <DBObject> ratingsList = new HashSet <> ();
+		//Set <DBObject> ratingsList = new HashSet <> ();
+		List <Document> ratingsList = new ArrayList <> ();
 		List <Document> groupList = collectionGroupsToList (database);
 		//int soncero = 0;
 		//int nosoncero = 0;
@@ -82,7 +91,8 @@ public class Batch {
 			System.out.println(doc1.toString().replace("[", "").replace("]", "") + " length=" + newdoc1.length);*/
 			
 			for (int j = i+1; j < groupList.size(); j++) {
-				DBObject document = new BasicDBObject();
+				//DBObject document = new BasicDBObject();
+				Document document = new Document ();
 				
 				Object doc2 = groupList.get(j).get("keywords");
 				String[] newdoc2 = doc2.toString().split(", ");
@@ -150,12 +160,15 @@ public class Batch {
 		/* ********* */
 		
 		// Inserto los ratios en la base de datos
-		//MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
-		DBCollection collectionRatings = db.getCollection("ratings");
+		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
+		collectionRatings.drop();
+		System.out.println("INFORMATION: RatingsCollection have been dropped");
+		/*DBCollection collectionRatings = db.getCollection("ratings");
 		WriteResult documentsRemoved = collectionRatings.remove(new BasicDBObject());
-		System.out.println("(RATINGS) Number of documents are deleted: " + documentsRemoved.getN());
+		System.out.println("(RATINGS) Number of documents are deleted: " + documentsRemoved.getN());*/
 		
-		collectionRatings.insert(new ArrayList<>(ratingsList));
+		//collectionRatings.insert(new ArrayList<>(ratingsList));
+		collectionRatings.insertMany(ratingsList);
 		System.out.println("INFORMATION: New ratings inserted into the database");
     }
 	
@@ -187,9 +200,9 @@ public class Batch {
 	
 	
 	public static void grantsData () {
-		client = new MongoClient(uri);
+		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");*/
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
 		// Conexion y obtencion de keywords
@@ -257,9 +270,12 @@ public class Batch {
 			System.out.println("INFORMATION: Documents with charts data inserted");
 		}
 		
-		DBCollection collectionTweetsRemoved = db.getCollection("tweets");
+		/*DBCollection collectionTweetsRemoved = db.getCollection("tweets");
 		WriteResult tweetsRemoved = collectionTweetsRemoved.remove(new BasicDBObject());
-		System.out.println("Number of old tweets are deleted: " + tweetsRemoved.getN());
+		System.out.println("Number of old tweets are deleted: " + tweetsRemoved.getN());*/
+		collectionTweets.drop();
+		database.createCollection("tweets");
+		System.out.println("INFORMATION: tweetsCollection have been dropped and created again");
 	}
 	
 	
@@ -321,12 +337,13 @@ public class Batch {
 	
 	@SuppressWarnings("unchecked")
 	public static void recommendations () {
-		client = new MongoClient(uri);
+		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");*/
 		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
 
-		List <DBObject> recommendationsList = new ArrayList <> ();
+		//List <DBObject> recommendationsList = new ArrayList <> ();
+		List <Document> recommendationsList = new ArrayList <> ();
 		List <Document> groupList = collectionGroupsToList (database);
 		List <Document> ratingsList = new ArrayList <> ();
 		
@@ -340,7 +357,8 @@ public class Batch {
 		System.out.println("Getting recommendations");
 		for (int i = 0; i < groupList.size(); i++) {
 			String idGroup = groupList.get(i).get("idGroup").toString();
-			DBObject document = new BasicDBObject();
+			//DBObject document = new BasicDBObject();
+			Document document = new Document ();
 			document.put("idGroup", idGroup);
 			Set <String> recommendationsIds = new HashSet <> ();
 			//String idGroup = "fqm202"; //String idGroup = "hum245";
@@ -384,11 +402,16 @@ public class Batch {
 		}*/
 		
 		// Inserto las recomendaciones en la base de datos
-		DBCollection collectionRecommendations = db.getCollection("recommendations");
+		/*DBCollection collectionRecommendations = db.getCollection("recommendations");
 		WriteResult documentsRemoved = collectionRecommendations.remove(new BasicDBObject());
 		System.out.println("(RECOMMENDATIONS) Number of documents are deleted: " + documentsRemoved.getN());
 		
-		collectionRecommendations.insert(recommendationsList);
+		collectionRecommendations.insert(recommendationsList);*/
+		MongoCollection<org.bson.Document> collectionRecommendations = database.getCollection("recommendations");
+		collectionRecommendations.drop();
+		System.out.println("INFORMATION: RecommendationsCollection have been dropped");
+		
+		collectionRecommendations.insertMany(recommendationsList);
 		System.out.println("INFORMATION: New recommendations inserted into the database");
 	}
 	
@@ -407,9 +430,10 @@ public class Batch {
 	
 	
 	public static void main(String... args) throws Exception{
-		executor();
+		System.out.println("Starting batch");
 		
-		client.close();
+		connectionDB();
+		executor();
 	}
 
 }
