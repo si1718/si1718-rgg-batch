@@ -420,19 +420,19 @@ public class Batch {
 	public static void executor() {
 		final Runnable beeper = new Runnable () {
 			public void run () {
+				System.out.println("Starting to run the applications in the executor batch");
 				ratingGroups();
 				grantsData();
 				recommendations();
-				System.out.println("Batch finished");
+				System.out.println("Executor batch finished");
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 5, 720, TimeUnit.MINUTES);
+				scheduler.scheduleAtFixedRate(beeper, 0, 12, TimeUnit.HOURS);
 	}
 	
 	
 	public static void main(String... args) throws Exception{
-		System.out.println("Starting batch");
 		connectionDB();
 		executor();
 	}
