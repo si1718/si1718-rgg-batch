@@ -56,9 +56,9 @@ public class Batch {
     
 	public static void ratingGroups () /*throws MalformedURLException*/ {
 		// TODO Auto-generated method stub
-		/*client = new MongoClient(uri);
+		client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");*/
+		db = client.getDB("si1718-rgg-groups");
 		
 		Set <DBObject> ratingsList = new HashSet <> ();
 		List <Document> groupList = collectionGroupsToList (database);
@@ -187,9 +187,9 @@ public class Batch {
 	
 	
 	public static void grantsData () {
-		/*client = new MongoClient(uri);
+		client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");*/
+		db = client.getDB("si1718-rgg-groups");
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
 		// Conexion y obtencion de keywords
@@ -321,9 +321,9 @@ public class Batch {
 	
 	@SuppressWarnings("unchecked")
 	public static void recommendations () {
-		/*client = new MongoClient(uri);
+		client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");*/
+		db = client.getDB("si1718-rgg-groups");
 		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
 
 		List <DBObject> recommendationsList = new ArrayList <> ();
@@ -402,15 +402,11 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 1, 12, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 30, 720, TimeUnit.MINUTES);
 	}
 	
 	
 	public static void main(String... args) throws Exception{
-		client = new MongoClient(uri);
-		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
-		
 		executor();
 		
 		client.close();
