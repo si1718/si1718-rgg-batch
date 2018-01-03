@@ -56,9 +56,9 @@ public class Batch {
     
 	public static void ratingGroups () /*throws MalformedURLException*/ {
 		// TODO Auto-generated method stub
-		client = new MongoClient(uri);
+		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");*/
 		
 		Set <DBObject> ratingsList = new HashSet <> ();
 		List <Document> groupList = collectionGroupsToList (database);
@@ -157,8 +157,6 @@ public class Batch {
 		
 		collectionRatings.insert(new ArrayList<>(ratingsList));
 		System.out.println("INFORMATION: New ratings inserted into the database");
-		
-		client.close();
     }
 	
 	
@@ -189,9 +187,9 @@ public class Batch {
 	
 	
 	public static void grantsData () {
-		client = new MongoClient(uri);
+		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");*/
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
 		// Conexion y obtencion de keywords
@@ -262,8 +260,6 @@ public class Batch {
 		DBCollection collectionTweetsRemoved = db.getCollection("tweets");
 		WriteResult tweetsRemoved = collectionTweetsRemoved.remove(new BasicDBObject());
 		System.out.println("Number of old tweets are deleted: " + tweetsRemoved.getN());
-		
-		client.close();
 	}
 	
 	
@@ -325,9 +321,9 @@ public class Batch {
 	
 	@SuppressWarnings("unchecked")
 	public static void recommendations () {
-		client = new MongoClient(uri);
+		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");*/
 		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
 
 		List <DBObject> recommendationsList = new ArrayList <> ();
@@ -394,8 +390,6 @@ public class Batch {
 		
 		collectionRecommendations.insert(recommendationsList);
 		System.out.println("INFORMATION: New recommendations inserted into the database");
-				
-		client.close();
 	}
 	
 	
@@ -413,7 +407,13 @@ public class Batch {
 	
 	
 	public static void main(String... args) throws Exception{
+		client = new MongoClient(uri);
+		database = client.getDatabase("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");
+		
 		executor();
+		
+		client.close();
 	}
 
 }
