@@ -238,6 +238,7 @@ public class Batch {
 			dataList.add(dIni);
 		}
 		
+		System.out.println("Getting charts data");
 		for (int i = 0; i < keywordsToSearch.length; i++) {
 			
 			for (int j = 0; j < tweetsList.size(); j++) {
@@ -431,9 +432,9 @@ public class Batch {
 	
 	public static void main(String... args) throws Exception{
 		System.out.println("Starting batch");
-		
 		connectionDB();
 		executor();
+		System.out.println("Batch finished");
 	}
 
 }
