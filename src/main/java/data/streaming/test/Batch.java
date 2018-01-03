@@ -1,8 +1,9 @@
 package data.streaming.test;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,7 +13,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.sling.commons.json.JSONException;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
@@ -30,6 +30,7 @@ import com.mongodb.WriteResult;
 import dbase.MongoConnection;
 import dbase.Utils;
 
+
 public class Batch {
 	
 	private final static MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
@@ -39,25 +40,31 @@ public class Batch {
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     
     
+    public static List <Document> collectionGroupsToList (MongoDatabase database) {
+    		List <Document> res = new ArrayList <> ();
+    		MongoCollection<org.bson.Document> collectionGroups = database.getCollection("groups");
+    		
+    		// Paso los grupos de la coleccion a una lista
+    		FindIterable<Document> findIter = collectionGroups.find();
+    		MongoCursor<Document> cursor = findIter.iterator();
+    		while (cursor.hasNext()) {
+    			res.add(cursor.next());
+    		}
+    		
+    		return res;
+    }
+    
 	public static void ratingGroups () /*throws MalformedURLException*/ {
 		// TODO Auto-generated method stub
 		client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
 		db = client.getDB("si1718-rgg-groups");
-		MongoCollection<org.bson.Document> collection = database.getCollection("groups");
 		
-		//List <Document> ratingsList = new ArrayList <> ();
 		Set <DBObject> ratingsList = new HashSet <> ();
-		List <Document> groupList = new ArrayList <> ();
+		List <Document> groupList = collectionGroupsToList (database);
 		//int soncero = 0;
 		//int nosoncero = 0;
 		
-		// Paso los grupos de la coleccion a una lista
-		FindIterable<Document> findIter = collection.find();
-		MongoCursor<Document> cursor = findIter.iterator();
-		while (cursor.hasNext()) {
-			groupList.add(cursor.next());
-		}
 		/*for (int i = 0; i < groupList.size(); i++) {
 			Object nameLeader = groupList.get(i).get("components");
 			for (int a = 0; a < nameLeader.toString().split(", ").length; a++) {
@@ -74,8 +81,7 @@ public class Batch {
 			/*System.out.println("....................................");
 			System.out.println(doc1.toString().replace("[", "").replace("]", "") + " length=" + newdoc1.length);*/
 			
-			for (int j = 1; j < groupList.size(); j++) {
-				//Document document = new Document ();
+			for (int j = i+1; j < groupList.size(); j++) {
 				DBObject document = new BasicDBObject();
 				
 				Object doc2 = groupList.get(j).get("keywords");
@@ -261,15 +267,148 @@ public class Batch {
 	}
 	
 	
+	static final Comparator <org.bson.Document> RATINGS_ORDER = new Comparator<org.bson.Document>() {
+		
+		public int compare(org.bson.Document e1, org.bson.Document e2) {
+			String rating1 = e1.get("rating").toString();
+			String rating2 = e2.get("rating").toString();
+			int dateCmp = (rating2).compareTo(rating1);
+			
+			if (dateCmp != 0)
+				return dateCmp;
+			
+			return (Double.parseDouble(rating1) < Double.parseDouble(rating2) ? -1 :
+				(Double.parseDouble(rating1) == Double.parseDouble(rating2) ? 0 : 1));
+		}
+		
+	};
+	
+	
+	/*public static List <String> keywordsGroup (List <Document> groupList, String idGroup, String id2) {
+		System.out.println("-------------------------------------");
+		List <String> res = new ArrayList <> ();
+		String [] keywordsId1 = null;
+		String [] keywordsId2 = null;
+		
+		for (Document d:groupList) {
+			if (d.containsValue(idGroup)) {
+				System.out.println("id1:"+idGroup);
+				keywordsId1 = d.get("keywords").toString().split(", ");
+				
+				for (String s : keywordsId1) { s = s.replace("[", "").replace("]", ""); System.out.println(s); }
+				System.out.println(keywordsId1.length);
+			}
+			if (d.containsValue(id2)) {
+				System.out.println("id2:"+id2);
+				keywordsId2 = d.get("keywords").toString().split(", ");
+				for (String t : keywordsId2) { t = t.replace("[", "").replace("]", ""); System.out.println(t); }
+				System.out.println(keywordsId2.length);
+			}
+		}
+		
+		for (String s2 : keywordsId2) {
+			int aaa = 0;
+			for (String s1 : keywordsId1) {
+				if (s2.contains(s1)) {
+					aaa = 1;
+				}
+			}
+			if (aaa == 0) {
+				res.add(s2);
+			}
+		}
+		System.out.println("res:"+res.toString());
+		System.out.println("-------------------------------------");
+		return res;
+	}*/
+	
+	
+	@SuppressWarnings("unchecked")
+	public static void recommendations () {
+		client = new MongoClient(uri);
+		database = client.getDatabase("si1718-rgg-groups");
+		db = client.getDB("si1718-rgg-groups");
+		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
+
+		List <DBObject> recommendationsList = new ArrayList <> ();
+		List <Document> groupList = collectionGroupsToList (database);
+		List <Document> ratingsList = new ArrayList <> ();
+		
+		// Paso los ratings de la coleccion a una lista
+		FindIterable<Document> findIter1 = collectionRatings.find();
+		MongoCursor<Document> cursor1 = findIter1.iterator();
+		while (cursor1.hasNext()) {
+			ratingsList.add(cursor1.next());
+		}
+		
+		System.out.println("Getting recommendations");
+		for (int i = 0; i < groupList.size(); i++) {
+			String idGroup = groupList.get(i).get("idGroup").toString();
+			DBObject document = new BasicDBObject();
+			document.put("idGroup", idGroup);
+			Set <String> recommendationsIds = new HashSet <> ();
+			//String idGroup = "fqm202"; //String idGroup = "hum245";
+			List <Document> ratings = new ArrayList <> ();
+			//System.out.println("/////////////////////////////");
+			for (Document d : ratingsList) {
+				if ( (d.get("id1").toString()).contentEquals(idGroup)
+					|| (d.get("id2").toString()).contentEquals(idGroup) ) {
+					ratings.add(d);
+				}
+			}
+			
+			Collections.sort(ratings, RATINGS_ORDER);
+			
+			for (int j = 0; j < 4; j++) {
+				//System.out.println(ratings.get(j).toString());
+				String id1 = ratings.get(j).getString("id1");
+				String id2 = ratings.get(j).getString("id2");
+				if (!(id1.equals(id2)) && id1.equals(idGroup)) {
+					recommendationsIds.add(id2);
+					//keywordsGroup(groupList, id1, id2);
+				}
+				else if (!(id1.equals(id2)) && id2.equals(idGroup)) {
+					recommendationsIds.add(id1);
+					//keywordsGroup(groupList, id2, id1);
+				}
+			}
+			
+			document.put("groupsRecommended", recommendationsIds);
+			recommendationsList.add(document);
+			/*System.out.println("RECOMMENDATIONS:");
+			for (String rI : recommendationsIds) {
+				System.out.println(rI);
+			}
+			
+			System.out.println("/////////////////////////////");*/
+		}
+		
+		/*for (DBObject rL:recommendationsList) {
+			System.out.println(rL.toString());
+		}*/
+		
+		// Inserto las recomendaciones en la base de datos
+		DBCollection collectionRecommendations = db.getCollection("recommendations");
+		WriteResult documentsRemoved = collectionRecommendations.remove(new BasicDBObject());
+		System.out.println("(RECOMMENDATIONS) Number of documents are deleted: " + documentsRemoved.getN());
+		
+		collectionRecommendations.insert(recommendationsList);
+		System.out.println("INFORMATION: New recommendations inserted into the database");
+				
+		client.close();
+	}
+	
+	
 	public static void executor() {
 		final Runnable beeper = new Runnable () {
 			public void run () {
 				ratingGroups();
 				grantsData();
+				recommendations();
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 12, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 1, 12, TimeUnit.HOURS);
 	}
 	
 	
