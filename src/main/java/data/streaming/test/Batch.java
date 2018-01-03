@@ -423,6 +423,7 @@ public class Batch {
 				ratingGroups();
 				grantsData();
 				recommendations();
+				System.out.println("Batch finished");
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
@@ -434,7 +435,6 @@ public class Batch {
 		System.out.println("Starting batch");
 		connectionDB();
 		executor();
-		System.out.println("Batch finished");
 	}
 
 }
