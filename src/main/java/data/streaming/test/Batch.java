@@ -25,11 +25,8 @@ import dbase.MongoConnection;
 
 
 public class Batch {
-	/*private final static MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
-    private static MongoClient client;*/
 	private static MongoConnection mongoConnect;
     private static MongoDatabase database;
-    /*private static DB db;*/
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     
     
@@ -56,13 +53,22 @@ public class Batch {
     }
     
     
-	public static void ratingGroups () {
-		// TODO Auto-generated method stub
-		/*client = new MongoClient(uri);
-		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");*/
+    public static List <Document> collectionTweetsToList (MongoDatabase database) {
+		List <Document> res = new ArrayList <> ();
+		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
-		//Set <DBObject> ratingsList = new HashSet <> ();
+		// Paso los grupos de la coleccion a una lista
+		FindIterable<Document> findIter = collectionTweets.find();
+		MongoCursor<Document> cursor = findIter.iterator();
+		while (cursor.hasNext()) {
+			res.add(cursor.next());
+		}
+		
+		return res;
+    }
+    
+    
+	public static void ratingGroups () {
 		List <Document> ratingsList = new ArrayList <> ();
 		List <Document> groupList = collectionGroupsToList (database);
 		//int soncero = 0;
@@ -157,9 +163,6 @@ public class Batch {
 		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
 		collectionRatings.drop();
 		System.out.println("INFORMATION: RatingsCollection have been dropped");
-		/*DBCollection collectionRatings = db.getCollection("ratings");
-		WriteResult documentsRemoved = collectionRatings.remove(new BasicDBObject());
-		System.out.println("(RATINGS) Number of documents are deleted: " + documentsRemoved.getN());*/
 		
 		//collectionRatings.insert(new ArrayList<>(ratingsList));
 		collectionRatings.insertMany(ratingsList);
@@ -193,15 +196,12 @@ public class Batch {
 	}
 	
 	
-	public static void grantsData (SortedSet<String> keywords) {
-		/*client = new MongoClient(uri);
-		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");*/
+	public static void grantsData () {
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
 		// Conexion y obtencion de keywords
 		System.out.println("Getting keywords to charts data");
-		//SortedSet<String> keywords = mongoConnect.getKeywords();
+		SortedSet<String> keywords = mongoConnect.getKeywords();
 		
 		Set <String> stringKEYWORDS = new HashSet <> ();
 		
@@ -215,15 +215,8 @@ public class Batch {
 		
 		final String[] keywordsToSearch = stringKEYWORDS.toArray(new String[stringKEYWORDS.size()]);
 		
-		List <Document> tweetsList = new ArrayList <> ();
+		List <Document> tweetsList = collectionTweetsToList (database);
 		List <Document> dataList = new ArrayList <> ();
-		
-		// Paso los grupos de la coleccion a una lista
-		FindIterable<Document> findIter = collectionTweets.find();
-		MongoCursor<Document> cursor = findIter.iterator();
-		while (cursor.hasNext()) {
-			tweetsList.add(cursor.next());
-		}
 		
 		if (dataList.isEmpty()) {
 			Document dIni = new Document("creationDate", "00-00-0000")
@@ -248,6 +241,7 @@ public class Batch {
 				}
 			}
 		}
+		System.out.println("Charts data have been obtained");
 		
 		/*System.out.println(":::::::::::::::::::::::::::::::::::::::::");
 		System.out.println("LIST OF DATA FOR THE CHARTS::");
@@ -258,15 +252,12 @@ public class Batch {
 		
 		// Database insertion
 		if (dataList.size() > 0) {
-			MongoCollection collectionChartsData = database.getCollection("chartsData");
+			MongoCollection<org.bson.Document> collectionChartsData = database.getCollection("chartsData");
 			collectionChartsData.insertMany(dataList);
 			dataList.clear();
 			System.out.println("INFORMATION: Documents with charts data inserted");
 		}
 		
-		/*DBCollection collectionTweetsRemoved = db.getCollection("tweets");
-		WriteResult tweetsRemoved = collectionTweetsRemoved.remove(new BasicDBObject());
-		System.out.println("Number of old tweets are deleted: " + tweetsRemoved.getN());*/
 		collectionTweets.drop();
 		database.createCollection("tweets");
 		System.out.println("INFORMATION: tweetsCollection have been dropped and created again");
@@ -329,11 +320,7 @@ public class Batch {
 	}*/
 	
 	
-	@SuppressWarnings("unchecked")
 	public static void recommendations () {
-		/*client = new MongoClient(uri);
-		database = client.getDatabase("si1718-rgg-groups");
-		db = client.getDB("si1718-rgg-groups");*/
 		MongoCollection<org.bson.Document> collectionRatings = database.getCollection("ratings");
 
 		//List <DBObject> recommendationsList = new ArrayList <> ();
@@ -395,12 +382,7 @@ public class Batch {
 			System.out.println(rL.toString());
 		}*/
 		
-		// Inserto las recomendaciones en la base de datos
-		/*DBCollection collectionRecommendations = db.getCollection("recommendations");
-		WriteResult documentsRemoved = collectionRecommendations.remove(new BasicDBObject());
-		System.out.println("(RECOMMENDATIONS) Number of documents are deleted: " + documentsRemoved.getN());
-		
-		collectionRecommendations.insert(recommendationsList);*/
+		// Insert recomendations into the database
 		MongoCollection<org.bson.Document> collectionRecommendations = database.getCollection("recommendations");
 		collectionRecommendations.drop();
 		System.out.println("INFORMATION: RecommendationsCollection have been dropped");
@@ -410,29 +392,25 @@ public class Batch {
 	}
 	
 	
-	public static void executor(SortedSet<String> keywords) {
+	public static void executor() {
 		final Runnable beeper = new Runnable () {
 			public void run () {
 				
 				System.out.println("Starting to run the applications in the executor batch");
 				ratingGroups();
-				grantsData(keywords);
+				grantsData();
 				recommendations();
 				System.out.println("Executor batch finished");
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 15, TimeUnit.MINUTES);
+				scheduler.scheduleAtFixedRate(beeper, 0, 6, TimeUnit.HOURS);
 	}
 	
 	
 	public static void main(String... args) throws Exception{
 		connectionDB();
-		
-		System.out.println("Getting keywords to charts data");
-		SortedSet<String> keywords = mongoConnect.getKeywords();
-		
-		executor(keywords);
+		executor();
 	}
 
 }
