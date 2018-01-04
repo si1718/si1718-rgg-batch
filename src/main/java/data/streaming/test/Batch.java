@@ -1,7 +1,6 @@
 package data.streaming.test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -43,7 +42,6 @@ public class Batch {
     		MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
 		MongoClient client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
-		DB db = client.getDB("si1718-rgg-groups");
     } 
     
     
@@ -428,7 +426,7 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 12, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 0, 1, TimeUnit.HOURS);
 	}
 	
 	
