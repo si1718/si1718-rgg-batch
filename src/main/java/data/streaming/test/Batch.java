@@ -14,17 +14,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 
 import dbase.MongoConnection;
 import dbase.Utils;
@@ -39,7 +35,7 @@ public class Batch {
     
     
     static void connectionDB() {
-    		MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
+    		MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE, MongoClientOptions.builder().socketKeepAlive(true));
 		MongoClient client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
     } 
@@ -426,7 +422,7 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 1, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 0, 15, TimeUnit.MINUTES);
 	}
 	
 	
