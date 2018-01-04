@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
@@ -23,19 +22,20 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import dbase.MongoConnection;
-import dbase.Utils;
 
 
 public class Batch {
 	/*private final static MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
     private static MongoClient client;*/
+	private static MongoConnection mongoConnect;
     private static MongoDatabase database;
     /*private static DB db;*/
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     
     
     static void connectionDB() {
-    		MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE, MongoClientOptions.builder().socketKeepAlive(true));
+    		MongoClientURI uri = new MongoClientURI("mongodb://rafa:rafa@ds159845.mlab.com:59845/si1718-rgg-groups");
+    		mongoConnect = new MongoConnection();
 		MongoClient client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
     } 
@@ -56,7 +56,7 @@ public class Batch {
     }
     
     
-	public static void ratingGroups () /*throws MalformedURLException*/ {
+	public static void ratingGroups () {
 		// TODO Auto-generated method stub
 		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
@@ -200,9 +200,8 @@ public class Batch {
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
 		// Conexion y obtencion de keywords
-		MongoConnection mongoConnect = new MongoConnection();
+		System.out.println("Getting keywords to charts data");
 		SortedSet<String> keywords = mongoConnect.getKeywords();
-		//final String[] stringKEYWORDS = keywords.toArray(new String[keywords.size()]);
 		
 		Set <String> stringKEYWORDS = new HashSet <> ();
 		
@@ -414,6 +413,7 @@ public class Batch {
 	public static void executor() {
 		final Runnable beeper = new Runnable () {
 			public void run () {
+				
 				System.out.println("Starting to run the applications in the executor batch");
 				ratingGroups();
 				grantsData();

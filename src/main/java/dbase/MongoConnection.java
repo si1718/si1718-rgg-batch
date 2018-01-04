@@ -1,6 +1,7 @@
 package dbase;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -9,7 +10,7 @@ import java.util.TreeSet;
 
 public class MongoConnection {
 
-    private final MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
+    //private final MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
     private MongoClient client;
     private MongoDatabase database;
 
@@ -25,17 +26,19 @@ public class MongoConnection {
     		
     		for(String e : raw) {
     			if(!e.isEmpty()) {
-    			
-    			keywords.add(e.trim());
+    				keywords.add(e.trim());
     			}
     		}
     		
     	}
-    	
+    	client.close();
     	return keywords;
     }
     	
     public void openDB() {
+    		MongoClientOptions.Builder options = MongoClientOptions.builder();
+		options.connectTimeout(50*1000);
+		MongoClientURI uri = new MongoClientURI("mongodb://rafa:rafa@ds159845.mlab.com:59845/si1718-rgg-groups", options);
     		client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
     }
