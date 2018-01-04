@@ -68,6 +68,21 @@ public class Batch {
     }
     
     
+    public static List <Document> collectionChartsDataToList (MongoDatabase database) {
+		List <Document> res = new ArrayList <> ();
+		MongoCollection<org.bson.Document> collectionChartsData = database.getCollection("chartsData");
+		
+		// Paso los grupos de la coleccion a una lista
+		FindIterable<Document> findIter = collectionChartsData.find();
+		MongoCursor<Document> cursor = findIter.iterator();
+		while (cursor.hasNext()) {
+			res.add(cursor.next());
+		}
+		
+		return res;
+    }
+    
+    
 	public static void ratingGroups () {
 		List <Document> ratingsList = new ArrayList <> ();
 		List <Document> groupList = collectionGroupsToList (database);
@@ -196,7 +211,7 @@ public class Batch {
 	}
 	
 	
-	public static void grantsData () {
+	public static void chartsData () {
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
 		// Conexion y obtencion de keywords
@@ -398,13 +413,13 @@ public class Batch {
 				
 				System.out.println("Starting to run the applications in the executor batch");
 				ratingGroups();
-				grantsData();
+				chartsData();
 				recommendations();
 				System.out.println("Executor batch finished");
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 6, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 0, 4, TimeUnit.HOURS);
 	}
 	
 	
