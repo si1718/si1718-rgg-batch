@@ -193,7 +193,7 @@ public class Batch {
 	}
 	
 	
-	public static void grantsData () {
+	public static void grantsData (SortedSet<String> keywords) {
 		/*client = new MongoClient(uri);
 		database = client.getDatabase("si1718-rgg-groups");
 		db = client.getDB("si1718-rgg-groups");*/
@@ -201,7 +201,7 @@ public class Batch {
 		
 		// Conexion y obtencion de keywords
 		System.out.println("Getting keywords to charts data");
-		SortedSet<String> keywords = mongoConnect.getKeywords();
+		//SortedSet<String> keywords = mongoConnect.getKeywords();
 		
 		Set <String> stringKEYWORDS = new HashSet <> ();
 		
@@ -410,13 +410,13 @@ public class Batch {
 	}
 	
 	
-	public static void executor() {
+	public static void executor(SortedSet<String> keywords) {
 		final Runnable beeper = new Runnable () {
 			public void run () {
 				
 				System.out.println("Starting to run the applications in the executor batch");
 				ratingGroups();
-				grantsData();
+				grantsData(keywords);
 				recommendations();
 				System.out.println("Executor batch finished");
 			}
@@ -428,7 +428,11 @@ public class Batch {
 	
 	public static void main(String... args) throws Exception{
 		connectionDB();
-		executor();
+		
+		System.out.println("Getting keywords to charts data");
+		SortedSet<String> keywords = mongoConnect.getKeywords();
+		
+		executor(keywords);
 	}
 
 }

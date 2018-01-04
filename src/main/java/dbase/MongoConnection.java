@@ -11,7 +11,7 @@ import java.util.TreeSet;
 public class MongoConnection {
 
     //private final MongoClientURI uri = new MongoClientURI(Utils.URL_DATABASE);
-    private MongoClient client;
+    private MongoClient client1;
     private MongoDatabase database;
 
     public SortedSet<String> getKeywords() {
@@ -31,7 +31,7 @@ public class MongoConnection {
     		}
     		
     	}
-    	client.close();
+    	client1.close();
     	return keywords;
     }
     	
@@ -39,7 +39,7 @@ public class MongoConnection {
     		MongoClientOptions.Builder options = MongoClientOptions.builder();
 		options.connectTimeout(50*1000);
 		MongoClientURI uri = new MongoClientURI("mongodb://rafa:rafa@ds159845.mlab.com:59845/si1718-rgg-groups", options);
-    		client = new MongoClient(uri);
-		database = client.getDatabase("si1718-rgg-groups");
+    		client1 = new MongoClient(uri);
+		database = client1.getDatabase("si1718-rgg-groups");
     }
 }
