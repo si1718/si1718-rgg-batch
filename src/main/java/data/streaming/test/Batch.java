@@ -265,6 +265,8 @@ public class Batch {
 		}
 		System.out.println(":::::::::::::::::::::::::::::::::::::::::");*/
 		
+		collectionTweets.drop();
+		
 		// Database insertion
 		if (dataList.size() > 0) {
 			MongoCollection<org.bson.Document> collectionChartsData = database.getCollection("chartsData");
@@ -273,7 +275,6 @@ public class Batch {
 			System.out.println("INFORMATION: Documents with charts data inserted");
 		}
 		
-		collectionTweets.drop();
 		database.createCollection("tweets");
 		System.out.println("INFORMATION: tweetsCollection have been dropped and created again");
 	}
@@ -419,7 +420,7 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 3, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 0, 5, TimeUnit.HOURS);
 	}
 	
 	
