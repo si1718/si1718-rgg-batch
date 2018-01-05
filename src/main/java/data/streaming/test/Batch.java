@@ -419,7 +419,7 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 4, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 0, 3, TimeUnit.HOURS);
 	}
 	
 	
