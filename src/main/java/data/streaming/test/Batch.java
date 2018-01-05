@@ -211,6 +211,61 @@ public class Batch {
 	}
 	
 	
+	public static List <Document> optimizeChartsDataCollection (List <Document> dataList) {
+		List <Document> res = new ArrayList <> ();
+		List <Document> listChartsData =  collectionChartsDataToList (database);
+		
+		//Para sumar el doc nuevo a otro existente en la coleccion chartsData o insertarlo si no existe
+		for (int i = 0; i < dataList.size(); i++) {
+			String creationD = dataList.get(i).get("creationDate").toString();
+			String keyD = dataList.get(i).get("keyword").toString();
+			Integer tweetsD = Integer.parseInt( dataList.get(i).get("numTweets").toString() );
+			
+			Integer exist = 0;
+			String creationDChartsData = "";
+			String keyDChartsData = "";
+			Integer tweetsChartsData = 0;
+			for (int j = 0; j < listChartsData.size(); j++) {
+				Document doc = new Document ();
+				creationDChartsData = listChartsData.get(j).get("creationDate").toString();
+				keyDChartsData = listChartsData.get(j).get("keyword").toString();
+				tweetsChartsData = Integer.parseInt( listChartsData.get(j).get("numTweets").toString() );
+				
+				if ( (creationDChartsData).contentEquals(creationD)
+						&& (keyDChartsData).contentEquals(keyD)) {
+					tweetsChartsData = tweetsD + tweetsChartsData;
+					doc.append("creationDate", creationDChartsData).append("keyword", keyDChartsData)
+					.append("numTweets", tweetsChartsData);
+					res.add(doc);
+					exist = 1;
+				}
+			}
+			
+			if (exist == 0) { //There is a new date
+				Document doc1 = new Document ("creationDate", creationD)
+						.append("keyword", keyD).append("numTweets", tweetsD);
+				res.add(doc1);
+			}
+		}
+		
+		for (int j = 0; j < listChartsData.size(); j++) {
+			String creationD = dataList.get(0).get("creationDate").toString();
+			
+			String creationDChartsData = listChartsData.get(j).get("creationDate").toString();
+			String keyDChartsData = listChartsData.get(j).get("keyword").toString();
+			Integer tweetsDChartsData = Integer.parseInt( listChartsData.get(j).get("numTweets").toString() );
+			
+			if ( !((creationDChartsData).contentEquals(creationD)) ) {
+				Document doc2 = new Document ("creationDate", creationDChartsData)
+						.append("keyword", keyDChartsData).append("numTweets", tweetsDChartsData);
+				res.add(doc2);
+			}
+		}
+		
+		return res;
+	}
+	
+	
 	public static void chartsData () {
 		MongoCollection<org.bson.Document> collectionTweets = database.getCollection("tweets");
 		
@@ -234,7 +289,7 @@ public class Batch {
 		List <Document> dataList = new ArrayList <> ();
 		
 		if (dataList.isEmpty()) {
-			Document dIni = new Document("creationDate", "00-00-0000")
+			Document dIni = new Document("creationDate", "00-00-0000").append("keyword", "prueba")
 					.append("numTweets", 0);
 			dataList.add(dIni);
 		}
@@ -258,10 +313,12 @@ public class Batch {
 		}
 		System.out.println("Charts data have been obtained");
 		
+		List <Document> listRes = optimizeChartsDataCollection(dataList);
+		
 		/*System.out.println(":::::::::::::::::::::::::::::::::::::::::");
 		System.out.println("LIST OF DATA FOR THE CHARTS::");
-		for (int k = 0; k < dataList.size(); k++) {
-			System.out.println(dataList.get(k));
+		for (Document docu:listRes) {
+			System.out.println(docu);
 		}
 		System.out.println(":::::::::::::::::::::::::::::::::::::::::");*/
 		
@@ -270,7 +327,7 @@ public class Batch {
 		// Database insertion
 		if (dataList.size() > 0) {
 			MongoCollection<org.bson.Document> collectionChartsData = database.getCollection("chartsData");
-			collectionChartsData.insertMany(dataList);
+			collectionChartsData.insertMany(listRes);
 			dataList.clear();
 			System.out.println("INFORMATION: Documents with charts data inserted");
 		}
@@ -420,7 +477,7 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 5, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 0, 6, TimeUnit.HOURS);
 	}
 	
 	
