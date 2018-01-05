@@ -327,6 +327,7 @@ public class Batch {
 		// Database insertion
 		if (dataList.size() > 0) {
 			MongoCollection<org.bson.Document> collectionChartsData = database.getCollection("chartsData");
+			collectionChartsData.drop();
 			collectionChartsData.insertMany(listRes);
 			dataList.clear();
 			System.out.println("INFORMATION: Documents with charts data inserted");
