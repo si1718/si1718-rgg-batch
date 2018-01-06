@@ -214,6 +214,12 @@ public class Batch {
 	public static List <Document> optimizeChartsDataCollection (List <Document> dataList) {
 		List <Document> res = new ArrayList <> ();
 		List <Document> listChartsData =  collectionChartsDataToList (database);
+		/*System.out.println("----------CHARTSDATA----------");
+		for (Document d : listChartsData) {
+			System.out.println(d);
+		}
+		System.out.println("------------------------------");
+		System.out.println("------------------------------");*/
 		
 		//Para sumar el doc nuevo a otro existente en la coleccion chartsData o insertarlo si no existe
 		for (int i = 0; i < dataList.size(); i++) {
@@ -248,17 +254,58 @@ public class Batch {
 			}
 		}
 		
-		for (int j = 0; j < listChartsData.size(); j++) {
-			String creationD = dataList.get(0).get("creationDate").toString();
+		Set <String> fechs = new HashSet <> (); // Fechas de dataList
+		for (int z = 0; z < dataList.size(); z++) {
+			fechs.add( dataList.get(z).get("creationDate").toString() );
+		}
+		
+		List <String> keysfech1 = new ArrayList <> (); // Penultimo dia
+		List <String> keysfech2 = new ArrayList <> (); // Ultimo dia
+		List <String> f = new ArrayList <> ();
+		for (int k = 0; k < dataList.size(); k++) { // Para ver las keywords nuevas que se han obtenido de cada fecha
+			for (String g : fechs) { f.add(g); }
+			if ( (dataList.get(k).get("creationDate").toString()).contentEquals( f.get(0).toString() ) ) {
+				keysfech1.add( dataList.get(k).get("keyword").toString() );
+			}
+			else if ( (dataList.get(k).get("creationDate").toString()).contentEquals( f.get(1).toString() ) ) {
+				keysfech2.add( dataList.get(k).get("keyword").toString() );
+			}
+		}
+		
+		for (int l = 0; l < listChartsData.size(); l++) {
+			String creationDChartsData = listChartsData.get(l).get("creationDate").toString();
+			String keyDChartsData = listChartsData.get(l).get("keyword").toString();
+			Integer tweetsDChartsData = Integer.parseInt( listChartsData.get(l).get("numTweets").toString() );
 			
-			String creationDChartsData = listChartsData.get(j).get("creationDate").toString();
-			String keyDChartsData = listChartsData.get(j).get("keyword").toString();
-			Integer tweetsDChartsData = Integer.parseInt( listChartsData.get(j).get("numTweets").toString() );
+			for (int m = 0; m < fechs.size(); m++) {
+				if ( (creationDChartsData).contentEquals(f.get(m).toString())) {
+					if (m == 0) {
+						if ( !(keysfech1.contains(keyDChartsData)) ) { // Si la clave no esta en keysfech1, se agrega el doc antiguo a res
+							Document doc2 = new Document ("creationDate", creationDChartsData)
+									.append("keyword", keyDChartsData).append("numTweets", tweetsDChartsData);
+							res.add(doc2);
+						}
+					}
+					else if ( !(keysfech2.contains(keyDChartsData)) ) { // Si la clave no esta en keysfech2, se agrega el doc antiguo a res
+							Document doc3 = new Document ("creationDate", creationDChartsData)
+									.append("keyword", keyDChartsData).append("numTweets", tweetsDChartsData);
+							res.add(doc3);
+					}
+					
+				}
+			}
 			
-			if ( !((creationDChartsData).contentEquals(creationD)) ) {
-				Document doc2 = new Document ("creationDate", creationDChartsData)
+			if ((fechs.size() == 1) && !((creationDChartsData).contentEquals(f.get(0).toString()))) {
+				Document doc4 = new Document ("creationDate", creationDChartsData)
 						.append("keyword", keyDChartsData).append("numTweets", tweetsDChartsData);
-				res.add(doc2);
+				res.add(doc4);
+			}
+			
+			if ((fechs.size() == 2) && !((creationDChartsData).contentEquals(f.get(0).toString())) 
+					&& !((creationDChartsData).contentEquals(f.get(1).toString())) ) {
+				Document doc5 = new Document ("creationDate", creationDChartsData)
+						.append("keyword", keyDChartsData).append("numTweets", tweetsDChartsData);
+				res.add(doc5);
 			}
 		}
 		
@@ -314,12 +361,17 @@ public class Batch {
 		System.out.println("Charts data have been obtained");
 		
 		List <Document> listRes = optimizeChartsDataCollection(dataList);
-		
-		/*System.out.println(":::::::::::::::::::::::::::::::::::::::::");
+		/*System.out.println("//////DATALIST//////");
+		for (Document docu:dataList) {
+			System.out.println(docu);
+		}
+		System.out.println("////////////////////");
+		System.out.println(":::::::::::::::::::::::::::::::::::::::::");
 		System.out.println("LIST OF DATA FOR THE CHARTS::");
 		for (Document docu:listRes) {
 			System.out.println(docu);
 		}
+		System.out.println(listRes.size());
 		System.out.println(":::::::::::::::::::::::::::::::::::::::::");*/
 		
 		collectionTweets.drop();
@@ -333,7 +385,7 @@ public class Batch {
 			System.out.println("INFORMATION: Documents with charts data inserted");
 		}
 		
-		database.createCollection("tweets");
+		//database.createCollection("tweets");
 		System.out.println("INFORMATION: tweetsCollection have been dropped and created again");
 	}
 	
@@ -478,7 +530,7 @@ public class Batch {
 			}
 		};
 		final ScheduledFuture<?> beeperHandle =
-				scheduler.scheduleAtFixedRate(beeper, 0, 6, TimeUnit.HOURS);
+				scheduler.scheduleAtFixedRate(beeper, 7, 6, TimeUnit.HOURS);
 	}
 	
 	
